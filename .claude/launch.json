@@ -10,7 +10,7 @@
     {
       "name": "app-pruebas",
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "cd frontend\\.e2e-run && set DATABASE_URL=sqlite:///./e2e.db&& set SECRET_KEY=e2e-secret-no-usar-en-produccion&& set DEFAULT_ADMIN_PASSWORD=E2e-Prueba-2026&& set AUTO_EXCEL_ON_STARTUP=false&& python -m uvicorn app.main:app --app-dir ../../backend --host 127.0.0.1 --port 8766"],
+      "runtimeArgs": ["/c", "cd frontend\\.e2e-run && set DATABASE_URL=sqlite:///./e2e.db&& set SECRET_KEY=e2e-secret-no-usar-en-produccion&& set DEFAULT_ADMIN_PASSWORD=E2e-Prueba-2026&& python -m uvicorn app.main:app --app-dir ../../backend --host 127.0.0.1 --port 8766"],
       "port": 8766
     }
   ]

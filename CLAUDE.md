@@ -14,9 +14,11 @@ Windows. Backend: FastAPI (puerto 8765). Frontend: React 19 + TS + Vite + Tailwi
 - Build frontend: `cd frontend && npm run build` (`tsc -b && vite build`). Si existe `frontend/dist`, el backend lo sirve como SPA.
 - Lint frontend: `cd frontend && npm run lint` (oxlint)
 - Tests: `cd backend && python -m pytest tests/ -v`
-- Un test: `cd backend && python -m pytest tests/test_excel_writer.py::nombre_test -v`
-- Migraciones: `cd backend && alembic upgrade head` (nota: al arrancar, `create_all` también crea tablas faltantes)
-- Sync de cartera por CLI: `cd backend && python sync_cartera.py [--dry-run] [--creemos RUTA] [--db RUTA]`
+- Un test: `cd backend && python -m pytest tests/test_pagos.py::nombre_test -v`
+- Esquema: al arrancar, `create_all` crea tablas y `main.create_tables` agrega columnas nuevas (Alembic no se usa en la BD real)
+- Migración única desde Excel: `cd backend && python migrar_excel.py --dry-run --base-limpia --excel ../Creemos.xlsx` (sin `--dry-run` migra; se niega a correr dos veces)
+- Conciliación del mes en paralelo (solo lectura): `cd backend && python conciliar_excel.py --excel ../Creemos.xlsx [--mes AAAA-MM | --todos]`
+- E2E: `cd frontend && npm run build && npm run e2e` (Playwright; backend aislado con BD propia en `frontend/.e2e-run`)
 
 `tests/conftest.py` apunta `DATABASE_URL` a un SQLite temporal antes de importar la app y el fixture `client` ya viene autenticado (`admin_test` / `Test1234`).
 
@@ -24,23 +26,16 @@ Windows. Backend: FastAPI (puerto 8765). Frontend: React 19 + TS + Vite + Tailwi
 
 Capas: `api/` (routers, `APIRouter(prefix="/api/v1/...")`) → `services/` → `repositories/` → `models/` (SQLAlchemy), con `schemas/` (Pydantic) para I/O. Auth JWT en `security/auth.py`; configuración vía `core/config.py` (pydantic-settings, lee `.env`). Las respuestas usan un envoltorio `{"data": ...}` (ver `schemas/common.py`).
 
-Hay **dos bases SQLite** en `backend/database/`:
-- `prestamos.db` — base operacional de la app (clientes, préstamos, pagos, facturas, usuarios, configuración, logs). `app/database/database.py`.
-- `cartera.db` — espejo de la cartera histórica parseada de `Creemos.xlsx` (`clientes_cartera`, `creditos`, pagos históricos, snapshots mensuales). Modelos/engine propios en `app/cartera/` (`BaseCartera`, separado de `Base`).
+Base SQLite única de operación: `backend/database/prestamos.db` (`app/database/database.py`).
 
-### Integración con Excel (lo más delicado)
+### Salida del Excel (`Creemos.xlsx`)
 
-Existen dos flujos distintos:
-
-1. **Excel de clientes "activo"** (registro `Archivo` con `tipo="clientes"`, `activo=True`): al iniciar, `SyncService.sincronizar_clientes` lo importa a SQLite. `app/utils/excel_export.py` (`exportar_a_excel`, `trigger_auto_export`) escribe de vuelta solo las filas de datos preservando encabezados/formato. Actualmente solo `api/excel.py` invoca la exportación; no hay middleware de auto-export en `main.py` pese a lo que dice `AGENTS.md`.
-
-2. **Cartera `Creemos.xlsx`** (en la raíz del repo, fuera de `backend/`): libro con la hoja `CXCOBRAR` organizada en bloques mensuales (encabezado tipo `"JULIO DE 2026"`) más una hoja individual por crédito (placa).
-   - Lectura: `parser_creemos.py` / `parser_joglo.py` → `SincronizadorCartera.ejecutar()` llena `cartera.db` → `importar_a_sistema.importar_cartera_a_sistema()` pasa la cartera a `prestamos.db`.
-   - Escritura: `excel_writer.py` crea el bloque del mes (`verificar_bloque_mes_actual`/`crear_bloque_mes`), escribe pagos del sistema (facturas `FACT-*`) en el bloque y en las hojas individuales (`escribir_pagos`), hace backup antes de modificar y recalcula fórmulas con Excel vía COM (`recalcular_excel`, requiere `pywin32` y Excel instalado).
-   - Disparadores: startup en `main.py` (sync inicial si `creditos` está vacío + cierre de mes automático), y endpoints en `api/sync.py` (`/cartera/actualizar-excel`) y `api/excel.py`.
-   - Siempre se verifica que el archivo no esté abierto en Excel (`PermissionError` → se omite o 409).
-
-El Excel es fuente de verdad al inicio; SQLite es la fuente de verdad durante la operación.
+El sistema es la **única fuente de verdad**: el servidor ya no lee ni escribe el Excel (sin sync al arrancar; `api/sync.py` y casi todo `api/excel.py` están desregistrados en `main.py`, solo queda `/api/v1/excel/exportar-todo`).
+- Migración única: `backend/migrar_excel.py`. Cada fila del último bloque de CXCOBRAR = un préstamo, identificado por placa + fecha de desembolso (un taxi puede tener 2 préstamos → `Prestamo.placa`). Desde el primer bloque mandan los bloques (pagos `MIG-B…`, con mora); las hojas por placa solo aportan historia anterior (`MIG-H…`). El saldo total debe cuadrar con el Excel.
+- Conciliación del mes en paralelo: `backend/conciliar_excel.py` (solo lectura).
+- Reemplazos: `services/cartera_mensual.py` (`cartera_del_mes`, cartera por cobrar de un mes calculada desde los pagos; endpoints `reportes/cartera-mensual` y su `/excel`) y el historial por préstamo `prestamos/{id}/historial/excel`.
+- Se conservan para migrar/conciliar: `app/cartera/parser_creemos.py` y las funciones de `parser_joglo.py`. Pendiente de borrar al apagar el Excel (fase 4): `cartera/excel_writer.py`, `importar_a_sistema.py`, `sincronizador.py`, `cartera/database.py`, `cartera/models.py`, `api/sync.py`, `services/sync_service.py`, `utils/excel_*.py`, modelo `Archivo`, `SynchronizationPage.tsx`, `sync.service.ts`, `sync_cartera.py`, `tests/test_excel_writer.py`.
+- Estados MORA/ACTIVO: `PrestamoService.recalcular_estados()` se llama al abrir el dashboard y el reporte de mora.
 
 ## Frontend (`frontend/src/`)
 

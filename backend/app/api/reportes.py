@@ -1,7 +1,8 @@
 from __future__ import annotations
+import os
 from datetime import date, datetime
 from decimal import Decimal
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -14,6 +15,7 @@ from app.models.prestamo import Prestamo
 from app.models.pago import Pago
 from app.models.factura import Factura
 from app.models.log import Log
+from app.services.cartera_mensual import cartera_del_mes
 
 router = APIRouter(prefix="/api/v1/reportes", tags=["Reportes"])
 
@@ -86,6 +88,8 @@ def reporte_mora(
     db: Session = Depends(get_db),
     _: Usuario = Depends(get_current_user),
 ):
+    from app.services.prestamo_service import PrestamoService
+    PrestamoService(db).recalcular_estados()
     prestamos = db.query(Prestamo).options(joinedload(Prestamo.cliente)).filter(Prestamo.estado == "MORA").order_by(Prestamo.fecha_proximo_pago).all()
     return SuccessResponse(data={
         "items": [{
@@ -164,12 +168,8 @@ def flujo_mensual(
         ).first()
         nuevos_prestamos.append(float(new_row[0]) if new_row else 0)
 
-        # Saldo total al final del mes
-        saldo_row = db.query(func.coalesce(func.sum(Prestamo.saldo_actual), 0)).filter(
-            Prestamo.estado.in_(["ACTIVO", "MORA"]),
-            Prestamo.fecha_inicio <= month_end,
-        ).first()
-        saldo_final.append(float(saldo_row[0]) if saldo_row else 0)
+        # Saldo de la cartera al cierre de ESE mes (histórico, desde los pagos)
+        saldo_final.append(float(cartera_del_mes(db, y, m)["totales"]["saldo_final"]))
 
     flujo_neto = [i - n for i, n in zip(intereses, nuevos_prestamos)]
 
@@ -182,6 +182,82 @@ def flujo_mensual(
         "flujo_neto": flujo_neto,
         "saldo_final": saldo_final,
     })
+
+
+def _mes_valido(anio: int | None, mes: int | None) -> tuple[int, int]:
+    hoy = date.today()
+    return (anio or hoy.year, mes or hoy.month)
+
+
+@router.get("/cartera-mensual")
+def reporte_cartera_mensual(
+    anio: int | None = Query(None, ge=2015, le=2100),
+    mes: int | None = Query(None, ge=1, le=12),
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_user),
+):
+    """Cartera por cobrar del mes (reemplazo del bloque CXCOBRAR del Excel)."""
+    return SuccessResponse(data=cartera_del_mes(db, *_mes_valido(anio, mes)))
+
+
+@router.get("/cartera-mensual/excel")
+def exportar_cartera_mensual(
+    background_tasks: BackgroundTasks,
+    anio: int | None = Query(None, ge=2015, le=2100),
+    mes: int | None = Query(None, ge=1, le=12),
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_user),
+):
+    import tempfile
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill
+
+    data = cartera_del_mes(db, *_mes_valido(anio, mes))
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "CXCOBRAR"
+    ws.append([data["mes"]])
+    ws["A1"].font = Font(bold=True, size=13)
+    ws.append([])
+    cols = ["Fecha", "Placa", "Cliente", "Vr.credito", "Vr. Cuota", "Saldo anterior", "Fecha Inicial",
+            "Fecha Final", "Dias", "Intereses", "Int. Mora", "Abono K", "Cuota", "Saldo Final"]
+    ws.append(cols)
+    for c in ws[3]:
+        c.font = Font(bold=True)
+    pago = PatternFill("solid", fgColor="DBEAFE")  # fila sombreada = pagó en el mes (como el color del Excel)
+    for f in data["items"]:
+        ws.append([f["fecha_desembolso"], f["placa"], f["cliente"], f["vr_credito"], f["vr_cuota"], f["saldo_anterior"],
+                   f["fecha_inicial"], f["fecha_final"], f["dias"], f["intereses"] if f["pago_en_mes"] else None,
+                   f["interes_mora"] or None, f["abono_capital"] if f["pago_en_mes"] else None,
+                   f["cuota"] if f["pago_en_mes"] else None, f["saldo_final"]])
+        if f["pago_en_mes"]:
+            for c in ws[ws.max_row]:
+                c.fill = pago
+    t = data["totales"]
+    ws.append(["TOTAL", None, None, None, None, t["saldo_anterior"], None, None, None,
+               t["abono_intereses"] - t["interes_mora"], t["interes_mora"], t["abono_capital"], t["recaudo"], t["saldo_final"]])
+    for c in ws[ws.max_row]:
+        c.font = Font(bold=True)
+    ws.append([])
+    for etiqueta, valor in (("Recaudo", t["recaudo"]), ("Abono a Capital", t["abono_capital"]),
+                            ("Abono Intereses", t["abono_intereses"]), ("2,5% sobre saldo anterior", t["interes_esperado"]),
+                            ("Créditos / pagaron", f"{t['creditos']} / {t['pagaron']}")):
+        ws.append([None, None, None, None, etiqueta, None, None, valor])
+    for row in ws.iter_rows(min_row=4):
+        for c in row:
+            if isinstance(c.value, Decimal):
+                c.value = int(c.value)
+                c.number_format = "#,##0"
+    for letra, ancho in zip("ABCDEFGHIJKLMN", (12, 10, 34, 13, 11, 14, 12, 12, 6, 12, 11, 12, 12, 14)):
+        ws.column_dimensions[letra].width = ancho
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+    tmp.close()
+    wb.save(tmp.name)
+    background_tasks.add_task(os.unlink, tmp.name)
+    nombre = f"cartera_{data['anio']}_{data['numero_mes']:02d}.xlsx"
+    return FileResponse(tmp.name, filename=nombre,
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
 @router.get("/exportar-excel")

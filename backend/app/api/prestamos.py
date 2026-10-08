@@ -1,5 +1,5 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status, Query
 from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.schemas.prestamo import PrestamoCreate, PrestamoUpdate, PrestamoResponse
@@ -30,7 +30,7 @@ def listar_prestamos(
     for p in items:
             result.append(PrestamoResponse(
             id=p.id, cliente_id=p.cliente_id, cliente_nombre=p.cliente.nombre if p.cliente else "",
-            cliente_placa=p.cliente.placa if p.cliente else "",
+            cliente_placa=p.placa or (p.cliente.placa if p.cliente else ""),
             capital_inicial=p.capital_inicial, saldo_actual=p.saldo_actual,
             valor_cuota=p.valor_cuota, tasa_interes=p.tasa_interes,
             fecha_inicio=p.fecha_inicio, fecha_primer_pago=p.fecha_primer_pago,
@@ -40,6 +40,50 @@ def listar_prestamos(
     return SuccessResponse(data={
         "items": result, "total": total, "page": page, "page_size": page_size,
     })
+
+
+@router.get("/{prestamo_id}/historial/excel")
+def exportar_historial(
+    prestamo_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(get_current_user),
+):
+    """Historial de pagos del préstamo (reemplazo de la hoja por placa del Excel)."""
+    import os
+    import tempfile
+    import openpyxl
+    from openpyxl.styles import Font
+    from fastapi.responses import FileResponse
+
+    p = PrestamoRepository(db).get_by_id(prestamo_id)
+    if not p:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Préstamo no encontrado.")
+    placa = p.placa or (p.cliente.placa if p.cliente else "")
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = (placa or f"Prestamo {p.id}")[:31]
+    ws.append([f"CRÉDITO {p.cliente.nombre if p.cliente else ''}"])
+    ws.append(["VALOR CRÉDITO", int(p.capital_inicial), None, "CUOTA", int(p.valor_cuota)])
+    ws.append(["PLACA", placa, None, "DESEMBOLSO", p.fecha_inicio.isoformat()])
+    ws.append(["SALDO ACTUAL", int(p.saldo_actual), None, "PRÓXIMO PAGO", p.fecha_proximo_pago.isoformat()])
+    ws.append([])
+    ws.append(["#", "Recibo", "Fecha pago", "Días", "Valor pagado", "Interés", "Mora", "Capital", "Saldo", "Observaciones"])
+    for c in ws[6]:
+        c.font = Font(bold=True)
+    ws["A1"].font = Font(bold=True, size=13)
+    for n, x in enumerate(sorted(p.pagos, key=lambda x: (x.fecha_pago, x.id)), start=1):
+        ws.append([n, x.numero_factura, x.fecha_pago.isoformat(), x.dias_calculados, int(x.valor_pagado),
+                   int(x.intereses), int(x.intereses_mora or 0), int(x.capital), int(x.saldo_nuevo), x.observaciones or ""])
+    for letra, ancho in zip("ABCDEFGHIJ", (5, 16, 12, 6, 14, 12, 10, 12, 14, 40)):
+        ws.column_dimensions[letra].width = ancho
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+    tmp.close()
+    wb.save(tmp.name)
+    background_tasks.add_task(os.unlink, tmp.name)
+    return FileResponse(tmp.name, filename=f"historial_{placa or p.id}.xlsx",
+                        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
 @router.get("/{prestamo_id}")
@@ -54,7 +98,7 @@ def obtener_prestamo(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Préstamo no encontrado.")
     return SuccessResponse(data=PrestamoResponse(
         id=p.id, cliente_id=p.cliente_id, cliente_nombre=p.cliente.nombre if p.cliente else "",
-        cliente_placa=p.cliente.placa if p.cliente else "",
+        cliente_placa=p.placa or (p.cliente.placa if p.cliente else ""),
         capital_inicial=p.capital_inicial, saldo_actual=p.saldo_actual,
         valor_cuota=p.valor_cuota, tasa_interes=p.tasa_interes,
         fecha_inicio=p.fecha_inicio, fecha_primer_pago=p.fecha_primer_pago,

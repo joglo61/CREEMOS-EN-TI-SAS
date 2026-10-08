@@ -16,8 +16,7 @@ from app.api.prestamos import router as prestamos_router
 from app.api.pagos import router as pagos_router
 from app.api.facturas import router as facturas_router
 from app.api.dashboard import router as dashboard_router
-from app.api.excel import router as excel_router
-from app.api.sync import router as sync_router
+from app.api.excel import exportar_todo
 from app.api.configuracion import router as config_router
 from app.api.usuarios import router as usuarios_router
 from app.api.backups import router as backups_router
@@ -45,6 +44,13 @@ def create_directories():
 
 def create_tables():
     Base.metadata.create_all(bind=engine)
+    # create_all no agrega columnas a tablas existentes (Alembic no se usa en la BD real)
+    from sqlalchemy import inspect, text
+    columnas = {c["name"] for c in inspect(engine).get_columns("prestamos")}
+    if "placa" not in columnas:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE prestamos ADD COLUMN placa VARCHAR(20)"))
+            conn.execute(text("UPDATE prestamos SET placa = (SELECT placa FROM clientes WHERE clientes.id = prestamos.cliente_id)"))
 
 
 def seed_initial_data():
@@ -124,72 +130,8 @@ def create_app() -> FastAPI:
             content={"detail": "Error interno del servidor. Contacte al administrador."},
         )
 
-    @app.on_event("startup")
-    def startup_sync():
-        try:
-            db = SessionLocal()
-            try:
-                from app.models.archivo import Archivo
-                a = db.query(Archivo).filter(Archivo.tipo == "clientes", Archivo.activo == True).first()
-                if a:
-                    from app.services.sync_service import SyncService
-                    SyncService(db).sincronizar_clientes(usuario_id=None)
-            finally:
-                db.close()
-        except Exception as e:
-            logger.error(f"Startup client sync failed: {e}")
-
-        try:
-            from app.cartera.sincronizador import SincronizadorCartera
-            from app.cartera.database import get_cartera_db
-            cartera_db = get_cartera_db()
-            session = cartera_db.get_session()
-            from sqlalchemy import text
-            already_synced = session.execute(text("SELECT COUNT(*) FROM creditos")).scalar() > 0
-            session.close()
-            if not already_synced:
-                sync = SincronizadorCartera()
-                resultado = sync.ejecutar()
-                logger.info(f"Cartera sync on startup: {resultado.get('creditos', 0)} creditos, "
-                            f"{resultado.get('pagos', 0)} pagos, {resultado.get('snapshots', 0)} snapshots")
-            else:
-                logger.info("Cartera ya sincronizada, omitiendo sync inicial")
-        except Exception as e:
-            logger.error(f"Startup cartera sync failed: {e}")
-
-        # Cierre de mes: crear el bloque del mes actual en Creemos.xlsx si falta
-        if not settings.AUTO_EXCEL_ON_STARTUP:
-            return
-        try:
-            from pathlib import Path
-            from app.cartera.excel_writer import verificar_bloque_mes_actual, recalcular_excel
-            ruta_creemos = Path(__file__).resolve().parent.parent.parent / "Creemos.xlsx"
-            if ruta_creemos.exists():
-                try:
-                    with open(str(ruta_creemos), "r+b"):
-                        pass
-                except PermissionError:
-                    logger.warning("Creemos.xlsx abierto en Excel; se omite verificación de bloque mensual.")
-                    ruta_creemos = None
-                if ruta_creemos:
-                    db_main = SessionLocal()
-                    try:
-                        bloque = verificar_bloque_mes_actual(str(ruta_creemos), db_main)
-                    finally:
-                        db_main.close()
-                    if bloque:
-                        recalcular_excel(str(ruta_creemos))
-                        sync2 = SincronizadorCartera()
-                        sync2.ejecutar()
-                        db_main2 = SessionLocal()
-                        try:
-                            from app.cartera.importar_a_sistema import importar_cartera_a_sistema
-                            importar_cartera_a_sistema(db_main2, usuario_id=1)
-                        finally:
-                            db_main2.close()
-                        logger.info(f"Bloque mensual creado en startup: {bloque.get('label')}")
-        except Exception as e:
-            logger.error(f"Startup bloque mensual failed: {e}")
+    # El sistema es la fuente de verdad: el arranque ya no sincroniza ni escribe Creemos.xlsx
+    # (migración única: backend/migrar_excel.py).
 
     app.include_router(auth_router)
     app.include_router(clientes_router)
@@ -197,8 +139,8 @@ def create_app() -> FastAPI:
     app.include_router(pagos_router)
     app.include_router(facturas_router)
     app.include_router(dashboard_router)
-    app.include_router(excel_router)
-    app.include_router(sync_router)
+    # Del módulo Excel solo queda el respaldo completo (clientes, préstamos, pagos, facturas)
+    app.add_api_route("/api/v1/excel/exportar-todo", exportar_todo, methods=["GET"], tags=["Excel"])
     app.include_router(config_router)
     app.include_router(usuarios_router)
     app.include_router(backups_router)

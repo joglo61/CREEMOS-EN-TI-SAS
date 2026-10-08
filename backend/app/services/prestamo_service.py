@@ -73,7 +73,7 @@ class PrestamoService:
         if fecha_primer_pago is None:
             fecha_primer_pago = self._add_month(fecha_inicio)
         prestamo = Prestamo(
-            cliente_id=cliente_id, capital_inicial=capital_inicial, saldo_actual=capital_inicial,
+            cliente_id=cliente_id, placa=cliente.placa, capital_inicial=capital_inicial, saldo_actual=capital_inicial,
             valor_cuota=valor_cuota, tasa_interes=tasa, fecha_inicio=fecha_inicio,
             fecha_primer_pago=fecha_primer_pago, fecha_proximo_pago=fecha_primer_pago, estado="ACTIVO",
         )
@@ -110,6 +110,17 @@ class PrestamoService:
             prestamo.estado = "ACTIVO"
         self.repo.update(prestamo)
         return prestamo.estado
+
+    def recalcular_estados(self) -> None:
+        """MORA/ACTIVO de todos los préstamos vigentes según días de gracia (mismo criterio que
+        actualizar_estado_automatico, en dos UPDATE). Se llama al abrir dashboard y reporte de mora."""
+        from datetime import timedelta
+        config = self.db.query(Configuracion).first()
+        limite = date.today() - timedelta(days=config.dias_gracia if config else 5)
+        vigentes = self.db.query(Prestamo).filter(Prestamo.estado.in_(["ACTIVO", "MORA"]), Prestamo.saldo_actual > 0)
+        vigentes.filter(Prestamo.fecha_proximo_pago < limite).update({"estado": "MORA"}, synchronize_session=False)
+        vigentes.filter(Prestamo.fecha_proximo_pago >= limite).update({"estado": "ACTIVO"}, synchronize_session=False)
+        self.db.commit()
 
     def actualizar(self, prestamo_id: int, valor_cuota: Decimal | None = None, estado: str | None = None, usuario_id: int | None = None, ip: str | None = None) -> Prestamo:
         prestamo = self.repo.get_by_id(prestamo_id)

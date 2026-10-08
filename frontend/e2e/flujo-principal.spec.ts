@@ -62,4 +62,11 @@ test('flujo completo: cliente → buscar → pagar → recibo', async ({ page })
   await page.getByRole('button', { name: 'Ver Recibo' }).click()
   await expect(page).toHaveURL(/\/facturas\/\d+/)
   await expect(page.getByText(/FACT-\d{6}/).first()).toBeVisible()
+
+  // Cartera mensual (reemplazo del bloque CXCOBRAR): el préstamo aparece como "Pagó" este mes
+  await page.goto('/reportes')
+  await expect(page.getByRole('button', { name: 'Cartera mensual' })).toBeVisible()
+  const fila = page.getByRole('row').filter({ hasText: placa })
+  await expect(fila).toContainText('Pagó')
+  await expect(fila).toContainText('$29.550.000')
 })

@@ -42,7 +42,6 @@ En `backend/.env` de producción:
 - `SECRET_KEY` nuevo: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` (**no reutilizar el del PC**).
 - `CORS_ORIGINS=https://app.su-dominio.com`
 - `ENABLE_DOCS=false`
-- `AUTO_EXCEL_ON_STARTUP=false` (un reinicio no reescribe `Creemos.xlsx`; el bloque mensual se crea con "Actualizar Excel").
 - `DEFAULT_ADMIN_PASSWORD` solo aplica si la BD no tiene al admin. Como se copia la BD existente, **cambie la contraseña del admin desde la app** tras el primer ingreso si la anterior estuvo en el `.env` del PC.
 
 ## 5. Levantar
@@ -76,8 +75,24 @@ cp datos/backups/diario/<FECHA>/Creemos.xlsx datos/
 docker compose start app
 ```
 
-## Flujo del Excel durante la transición
-- El servidor **no recalcula fórmulas** (no hay Excel en Linux). Se recalculan al abrir el archivo en Excel.
-- Para editar a mano: descargar `Creemos.xlsx` desde la app → editar en Excel → volver a subirlo (tipo "cartera") en la app. La subida sincroniza `cartera.db` y el sistema.
-- Para que el Excel refleje los pagos del sistema: botón **"Actualizar Excel"** y luego descargar.
-- Evitar editar el Excel descargado mientras otros registran pagos en la app; la última subida sobrescribe el archivo (queda copia en `datos/data/backup_Creemos.xlsx`).
+## Salida del Excel: migración única y mes en paralelo
+El sistema es la única fuente de verdad. El servidor **nunca** lee ni escribe `Creemos.xlsx`.
+
+**1. Migración (una sola vez, el día del corte)** — en el PC, con el Excel actualizado y cerrado:
+```bash
+cd backend
+python migrar_excel.py --dry-run --base-limpia --excel ../Creemos.xlsx   # revisar el informe
+python migrar_excel.py --base-limpia --excel ../Creemos.xlsx             # migra (hace backup antes)
+```
+- El informe debe decir **CUADRA** (saldo migrado = saldo del último bloque) y conviene corregir en el Excel los avisos ⚠ (hoja ≠ CXCOBRAR, fechas futuras, etc.) antes de la corrida real.
+- `--base-limpia` borra clientes/préstamos/pagos de prueba; conserva usuarios y configuración.
+- No se puede correr dos veces (queda un registro `MIGRACION_FINAL`).
+- Luego copiar `backend/database/prestamos.db` al servidor (§3).
+
+**2. Mes en paralelo** — el personal registra cada pago **en la app** (recibo) y lo sigue anotando en su Excel como hoy. Al cierre del mes, en el PC:
+```bash
+python conciliar_excel.py --excel ../Creemos.xlsx            # último bloque vs app (usa una copia de prestamos.db del servidor)
+```
+Lista por préstamo las diferencias de "pagó / no pagó", valor y saldo final. Criterio para apagar el Excel: un cierre de mes sin diferencias (o todas explicadas) y el checklist `24_pruebas_uat.md` aprobado.
+
+**3. Reemplazos en la app**: bloque CXCOBRAR → *Reportes → Cartera mensual* (con exportación a Excel); hoja por placa → *Préstamo → Pagos → Exportar historial*; respaldo general → *Respaldo Excel*.

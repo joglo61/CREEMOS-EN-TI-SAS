@@ -25,7 +25,6 @@ export default defineConfig({
       SECRET_KEY: 'e2e-secret-no-usar-en-produccion',
       DEFAULT_ADMIN_PASSWORD: E2E_ADMIN.password,
       ENABLE_DOCS: 'false',
-      AUTO_EXCEL_ON_STARTUP: 'false',
       CORS_ORIGINS: 'http://127.0.0.1:8766',
     },
   },

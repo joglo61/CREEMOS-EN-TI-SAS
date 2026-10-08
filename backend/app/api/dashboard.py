@@ -19,6 +19,8 @@ def dashboard(
     db: Session = Depends(get_db),
     _: Usuario = Depends(get_current_user),
 ):
+    from app.services.prestamo_service import PrestamoService
+    PrestamoService(db).recalcular_estados()  # que el contador de mora esté al día
     hoy = date.today()
     inicio_mes = date(hoy.year, hoy.month, 1)
 

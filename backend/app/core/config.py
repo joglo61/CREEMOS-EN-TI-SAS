@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_PASSWORD: str = ""
 
     ENABLE_DOCS: bool = True
-    AUTO_EXCEL_ON_STARTUP: bool = True
 
     class Config:
         env_file = ".env"

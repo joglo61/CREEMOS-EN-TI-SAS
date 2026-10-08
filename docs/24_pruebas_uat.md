@@ -50,11 +50,14 @@ Para cada fila de la tabla de referencia, en **Préstamos → Registrar pago**:
 - [ ] Dashboard: clientes activos, en mora, ingresos del día y capital pendiente coinciden con lo registrado en la prueba.
 - [ ] Reportes: los pagos del día aparecen con sus totales.
 
-## 6. Excel (transición)
-- [ ] **Excel → Descargar**: baja `Creemos.xlsx` y abre en Excel.
-- [ ] **Actualizar Excel**: los pagos registrados en la prueba aparecen en el bloque del mes (con color) y en la hoja de cada placa.
-- [ ] Editar el Excel descargado, volverlo a **Subir** → los cambios se reflejan en la app.
-- [ ] Subir un archivo que no es Excel → rechazado, el archivo anterior no se pierde.
+## 6. Reemplazos del Excel
+- [ ] **Reportes → Cartera mensual**: para un mes ya cerrado, los totales (recaudo, abono a capital, abono intereses, saldo al cierre) coinciden con el bloque de ese mes en el Excel.
+- [ ] Los que pagaron salen como "Pagó" (fila sombreada); el filtro "Solo los que no han pagado" funciona.
+- [ ] **Exportar a Excel** de la cartera mensual abre con las mismas columnas del bloque CXCOBRAR.
+- [ ] Taxi con dos préstamos: aparecen como dos préstamos con la misma placa.
+- [ ] **Préstamo → Pagos → Exportar historial** trae todos los pagos (equivalente a la hoja de la placa).
+- [ ] **Respaldo Excel**: descarga clientes, préstamos, pagos y facturas.
+- [ ] Mes en paralelo: `conciliar_excel.py` al cierre del mes sin diferencias (o explicadas).
 
 ## 7. Respaldos
 - [ ] **Backups → Crear respaldo** → aparece en la lista con fecha y hora.

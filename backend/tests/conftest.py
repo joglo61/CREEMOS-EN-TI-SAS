@@ -4,7 +4,6 @@ _db_fd, _db_path = tempfile.mkstemp(suffix='.db')
 os.close(_db_fd)
 os.environ['DATABASE_URL'] = 'sqlite:///' + _db_path.replace('\\', '/')
 # No tocar Creemos.xlsx real ni logs/app.log durante los tests
-os.environ['AUTO_EXCEL_ON_STARTUP'] = 'false'
 os.environ['LOGS_DIR'] = tempfile.mkdtemp()
 
 import pytest

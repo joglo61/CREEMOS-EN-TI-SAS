@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { useUnsaved } from '@/contexts/UnsavedContext'
 
 const menuItems = [
   { label: 'Dashboard', path: '/', icon: 'layout-dashboard' },
@@ -9,8 +8,7 @@ const menuItems = [
   { label: 'Pago de la Cuota', path: '/prestamos', icon: 'coins' },
   { label: 'Facturas', path: '/facturas', icon: 'receipt' },
   { label: 'Reportes', path: '/reportes', icon: 'chart-bar' },
-  { label: 'Excel', path: '/excel', icon: 'file-spreadsheet' },
-  { label: 'Sync', path: '/sync', icon: 'refresh' },
+  { label: 'Respaldo Excel', path: '/excel', icon: 'file-spreadsheet' },
   { label: 'Usuarios', path: '/usuarios', icon: 'user-cog', adminOnly: true },
   { label: 'Backups', path: '/backups', icon: 'database', adminOnly: true },
   { label: 'Config', path: '/config', icon: 'settings', adminOnly: true },
@@ -31,27 +29,12 @@ const iconPaths: Record<string, string> = {
 
 export default function ProtectedLayout() {
   const { isAuthenticated, loading, user, logout } = useAuth()
-  const { isDirty, markClean } = useUnsaved()
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (isDirty) e.preventDefault()
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [isDirty])
-
-  const handleLogout = () => {
-    if (isDirty) {
-      const ok = window.confirm('Hay datos sin guardar en Excel. ¿Estás seguro de cerrar sesión?')
-      if (!ok) return
-    }
-    markClean()
-    logout()
-  }
+  // Todo se guarda en el sistema al instante: ya no hay "pendiente de pasar a Excel"
+  const handleLogout = () => logout()
 
   if (loading) {
     return (
@@ -131,12 +114,6 @@ export default function ProtectedLayout() {
             </svg>
           </button>
           <div className="flex items-center gap-3 ml-auto">
-            {isDirty && (
-              <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Sin guardar
-              </span>
-            )}
             <button
               onClick={handleLogout}
               className="btn-ghost btn-sm text-surface-500 hover:text-red-600"

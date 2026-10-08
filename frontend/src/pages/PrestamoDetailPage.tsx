@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { prestamoService, type PrestamoItem } from '@/services/prestamo.service'
 import { formatDate } from '@/utils/format'
 import { pagoService, type PagoItem } from '@/services/pago.service'
+import { descargar } from '@/services/excel.service'
 import type { CronogramaEntry } from '@/services/cliente.service'
 import { useUnsaved } from '@/contexts/UnsavedContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -43,7 +44,7 @@ export default function PrestamoDetailPage() {
     }
     if (tab === 'pagos' && pagos.length === 0) {
       setTabLoading(true)
-      pagoService.list({ prestamo_id: Number(id) }).then((res) => {
+      pagoService.list({ prestamo_id: Number(id), page_size: 200 }).then((res) => {
         if (res.success && res.data?.items) setPagos(res.data.items)
         setTabLoading(false)
       }).catch(() => setTabLoading(false))
@@ -234,9 +235,17 @@ export default function PrestamoDetailPage() {
         <div className="card p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-surface-500 uppercase">Historial de Pagos</h3>
-            <button onClick={() => navigate(`/prestamos/${id}/pagar`)} className="btn-success btn-xs">
-              + Nuevo Pago
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => descargar(`/prestamos/${id}/historial/excel`, `historial_prestamo_${id}.xlsx`).catch(() => alert('Error al exportar.'))}
+                className="btn-secondary btn-xs"
+              >
+                Exportar historial
+              </button>
+              <button onClick={() => navigate(`/prestamos/${id}/pagar`)} className="btn-success btn-xs">
+                + Nuevo Pago
+              </button>
+            </div>
           </div>
           {tabLoading ? <div className="text-center text-surface-500">Cargando...</div>
           : pagos.length === 0 ? <div className="text-center text-surface-500">Sin pagos registrados.</div>
@@ -253,7 +262,8 @@ export default function PrestamoDetailPage() {
                     <th className="pb-2 pr-3 text-right">Saldo Anterior</th>
                     <th className="pb-2 pr-3 text-right">Saldo Nuevo</th>
                     <th className="pb-2 pr-3">Días</th>
-                    <th className="pb-2">Usuario</th>
+                    <th className="pb-2 pr-3">Usuario</th>
+                    <th className="pb-2">Observaciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,12 +272,13 @@ export default function PrestamoDetailPage() {
                       <td className="py-2 pr-3 font-mono text-xs">{p.numero_factura}</td>
                       <td className="py-2 pr-3">{formatDate(p.fecha_pago)}</td>
                       <td className="py-2 pr-3 text-right font-medium">${Number(p.valor_pagado).toLocaleString('es-CO')}</td>
-                      <td className="py-2 pr-3 text-right">${Number(p.intereses).toLocaleString('es-CO')}</td>
+                      <td className="py-2 pr-3 text-right">${(Number(p.intereses) + Number(p.intereses_mora || 0)).toLocaleString('es-CO')}</td>
                       <td className="py-2 pr-3 text-right">${Number(p.capital).toLocaleString('es-CO')}</td>
                       <td className="py-2 pr-3 text-right">${Number(p.saldo_anterior).toLocaleString('es-CO')}</td>
                       <td className="py-2 pr-3 text-right">${Number(p.saldo_nuevo).toLocaleString('es-CO')}</td>
                       <td className="py-2 pr-3">{p.dias_calculados}</td>
-                      <td className="py-2 text-xs text-surface-500">{p.usuario_nombre}</td>
+                      <td className="py-2 pr-3 text-xs text-surface-500">{p.usuario_nombre}</td>
+                      <td className="py-2 text-xs text-surface-500">{p.observaciones}</td>
                     </tr>
                   ))}
                 </tbody>

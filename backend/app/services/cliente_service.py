@@ -89,6 +89,7 @@ class ClienteService:
 
         prestamo = Prestamo(
             cliente_id=cliente.id,
+            placa=placa,
             capital_inicial=capital_inicial,
             saldo_actual=capital_inicial,
             valor_cuota=valor_cuota,

@@ -8,6 +8,8 @@ class Prestamo(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False, index=True)
+    # Placa del taxi de ESTE préstamo (un cliente puede tener varios taxis/préstamos)
+    placa = Column(String(20), nullable=True, index=True)
     capital_inicial = Column(Numeric(12, 0), nullable=False)
     saldo_actual = Column(Numeric(12, 0), nullable=False)
     valor_cuota = Column(Numeric(12, 0), nullable=False)

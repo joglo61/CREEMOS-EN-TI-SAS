@@ -15,7 +15,6 @@ import RegistrarPagoPage from '@/pages/RegistrarPagoPage'
 import FacturaDetailPage from '@/pages/FacturaDetailPage'
 import FacturasListPage from '@/pages/FacturasListPage'
 import ExcelManagementPage from '@/pages/ExcelManagementPage'
-import SynchronizationPage from '@/pages/SynchronizationPage'
 import ConfigurationPage from '@/pages/ConfigurationPage'
 import UsersManagementPage from '@/pages/UsersManagementPage'
 import BackupsPage from '@/pages/BackupsPage'
@@ -42,7 +41,6 @@ export default function App() {
             <Route path="/facturas" element={<FacturasListPage />} />
             <Route path="/facturas/:id" element={<FacturaDetailPage />} />
             <Route path="/excel" element={<ExcelManagementPage />} />
-            <Route path="/sync" element={<SynchronizationPage />} />
             <Route path="/config" element={<ConfigurationPage />} />
             <Route path="/usuarios" element={<UsersManagementPage />} />
             <Route path="/backups" element={<BackupsPage />} />

@@ -24,7 +24,7 @@ class PrestamoRepository:
         if term:
             like = f"%{term}%"
             q = q.join(Cliente).filter(
-                or_(Cliente.placa.like(like), Cliente.nombre.ilike(like), Cliente.cedula.like(like))
+                or_(Prestamo.placa.ilike(like), Cliente.placa.ilike(like), Cliente.nombre.ilike(like), Cliente.cedula.like(like))
             )
         total = q.count()
         items = q.order_by(Prestamo.id.desc()).offset((page - 1) * page_size).limit(page_size).all()

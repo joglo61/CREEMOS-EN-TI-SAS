@@ -78,6 +78,19 @@ def test_empleado_no_administra_usuarios_pero_si_registra_pagos(client):
         assert r.status_code == 201
 
 
+def test_dashboard_recalcula_mora_y_historial_por_placa(client):
+    hoy = date.today()
+    _, pid = _cliente(client, "7", primer_pago=hoy - timedelta(days=10))
+    assert client.get(f"/api/v1/prestamos/{pid}").json()["data"]["estado"] == "ACTIVO"
+    assert client.get("/api/v1/dashboard").json()["data"]["prestamos_mora"] == 1  # recalculado al abrir
+    assert client.get(f"/api/v1/prestamos/{pid}").json()["data"]["estado"] == "MORA"
+
+    r = client.get("/api/v1/prestamos?search=API7").json()["data"]
+    assert r["total"] == 1 and r["items"][0]["cliente_placa"] == "API7"
+    x = client.get(f"/api/v1/prestamos/{pid}/historial/excel")
+    assert x.status_code == 200 and x.content[:2] == b"PK"
+
+
 def test_sin_token_no_hay_acceso(client):
     from app.main import app
     anon = TestClient(app)
