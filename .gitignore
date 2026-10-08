@@ -1,0 +1,25 @@
+# Secretos
+.env
+backend/.env
+
+# Datos reales (nunca al repo)
+*.db
+*.xlsx
+*.xls
+datos/
+backend/database/
+backend/backups/
+backend/data/
+backend/recibos/
+backend/logs/
+backups/
+logs/
+data/
+recibos/
+
+# Build / caches
+node_modules/
+frontend/dist/
+__pycache__/
+.pytest_cache/
+graphify-out/

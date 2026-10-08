@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: backend/.env
+    volumes:
+      - ./datos/database:/srv/backend/database
+      - ./datos/backups:/srv/backend/backups
+      - ./datos/data:/srv/backend/data
+      - ./datos/recibos:/srv/backend/recibos
+      - ./datos/logs:/srv/backend/logs
+      - ./datos/Creemos.xlsx:/srv/Creemos.xlsx
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/health')"]
+      interval: 30s
+      retries: 3
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMINIO=${DOMINIO:?Defina DOMINIO en .env de la raíz}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
