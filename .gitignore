@@ -23,3 +23,6 @@ frontend/dist/
 __pycache__/
 .pytest_cache/
 graphify-out/
+frontend/.e2e-run/
+frontend/test-results/
+frontend/playwright-report/

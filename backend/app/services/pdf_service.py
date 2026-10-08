@@ -44,10 +44,10 @@ def _format(val: Decimal | None) -> str:
     return f"${int(val):,}".replace(",", ".")
 
 
-def _recibo_elements(styles, factura, pago, cliente, fecha_vencimiento):
+def _recibo_elements(styles, factura, pago, cliente, fecha_vencimiento, copia):
     elements = []
 
-    elements.append(Paragraph("RECIBO DE PAGO", styles["CenterTitle"]))
+    elements.append(Paragraph(f"RECIBO DE PAGO - {copia}", styles["CenterTitle"]))
     elements.append(Paragraph(f"<b>No. {factura.numero_factura}</b>", styles["CenterSub"]))
     elements.append(Spacer(1, 2*mm))
 
@@ -66,8 +66,6 @@ def _recibo_elements(styles, factura, pago, cliente, fecha_vencimiento):
     elements.append(info_table)
     elements.append(Spacer(1, 2*mm))
 
-    extra_row = ["", ""]
-
     header = ["Concepto", "Valor"]
     detail_data = [
         ["Saldo Anterior", _format(pago.saldo_anterior)],
@@ -75,7 +73,6 @@ def _recibo_elements(styles, factura, pago, cliente, fecha_vencimiento):
         ["Abono a Capital", _format(pago.capital)],
         ["Valor Pagado", _format(pago.valor_pagado)],
         ["Saldo Nuevo", _format(pago.saldo_nuevo)],
-        extra_row,
     ]
 
     detail_table = Table([header] + detail_data, colWidths=[100*mm, 65*mm])
@@ -96,11 +93,20 @@ def _recibo_elements(styles, factura, pago, cliente, fecha_vencimiento):
     ]))
     elements.append(detail_table)
 
-    elements.append(Spacer(1, 12*mm))
+    # Observaciones: espacio vacío para escribir a mano (el sistema nunca lo llena)
+    elements.append(Spacer(1, 2*mm))
+    obs_table = Table([["Observaciones:"], [""], [""]], colWidths=[165*mm], rowHeights=[None, 5*mm, 5*mm])
+    obs_table.setStyle(TableStyle([
+        ("FONTSIZE", (0, 0), (-1, -1), 7),
+        ("LINEBELOW", (0, 1), (-1, 2), 0.3, colors.grey),
+    ]))
+    elements.append(obs_table)
+
+    elements.append(Spacer(1, 7*mm))
 
     sig_data = [
         ["___________________________________________"],
-        ["Firma y Sello"],
+        ["Firma"],
     ]
     sig_table = Table(sig_data, colWidths=[175*mm])
     sig_table.setStyle(TableStyle([
@@ -140,7 +146,7 @@ def generar_recibo(db: Session, factura: Factura) -> str:
     styles.add(ParagraphStyle(name="RightSmall", parent=styles["Normal"], alignment=TA_RIGHT, fontSize=7))
     styles.add(ParagraphStyle(name="LeftSmall", parent=styles["Normal"], fontSize=7))
 
-    def _build_half():
+    def _build_half(copia):
         half = []
         half.append(Paragraph(empresa, styles["CenterTitle"]))
         if nit:
@@ -151,13 +157,13 @@ def generar_recibo(db: Session, factura: Factura) -> str:
             half.append(Paragraph(f"Tel: {empresa_tel}", styles["CenterSub"]))
         half.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#1e3a5f")))
         half.append(Spacer(1, 1*mm))
-        half.extend(_recibo_elements(styles, factura, pago, cliente, fecha_vencimiento))
+        half.extend(_recibo_elements(styles, factura, pago, cliente, fecha_vencimiento, copia))
         return half
 
-    top_half = _build_half()
-    bottom_half = _build_half()
+    top_half = _build_half("COPIA CLIENTE")
+    bottom_half = _build_half("COPIA CONTABILIDAD")
 
-    top_spacer = 10*mm
+    top_spacer = 3*mm
     cut_gap = 12*mm
     cut_line_spacer = (cut_gap - 2*mm) / 2
 

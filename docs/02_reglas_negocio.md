@@ -110,7 +110,7 @@ Días de mora
 
 7 días.
 
-No deberán descontarse los cinco días de gracia.
+No deberán descontarse los cinco días de gracia: con 5 o más días de retraso se cobran TODOS los días (aquí, 7).
 
 El cálculo deberá respetar exactamente la forma de trabajo actual de la empresa.
 
@@ -122,7 +122,13 @@ La mora utilizará exactamente la misma tasa del interés normal.
 
 La fórmula será:
 
-Mora = Saldo × Tasa ÷ 30 × Días de mora
+Mora = Valor pagado × Tasa ÷ 30 × Días de mora
+
+La mora solo se cobra cuando el retraso es de 5 días o más (días de mora ≥ 5). Con menos de 5 días de retraso la mora es 0, aunque los días se registran.
+
+Ejemplo: pago de $1.200.000 con 7 días de retraso y tasa 2.5 % → mora = $7.000.
+
+(Confirmado con la empresa el 2026-10-08; así lo calcula el sistema y el Excel. Verificado en `backend/tests/test_pagos.py`.)
 
 ---
 

@@ -154,7 +154,9 @@ class PagoService:
             next_month = 1
             year += 1
         last_day = monthrange(year, next_month)[1]
-        day = min(prestamo.fecha_proximo_pago.day, last_day)
+        # Día ancla = día del primer pago, para que un 31 → 28 feb vuelva a 31 en marzo
+        dia_ancla = (prestamo.fecha_primer_pago or prestamo.fecha_proximo_pago).day
+        day = min(dia_ancla, last_day)
         prestamo.fecha_proximo_pago = date(year, next_month, day)
 
         if saldo_nuevo <= Decimal("0"):

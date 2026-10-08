@@ -22,7 +22,8 @@ function _fmtDetail(d: unknown): string {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // En /auth/login un 401 es "credenciales inválidas": se muestra en el formulario, sin recargar.
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
       localStorage.removeItem('access_token')
       window.location.href = '/login'
     }
