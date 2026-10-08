@@ -50,7 +50,7 @@ const typeStyles: Record<ToastType, { bg: string; border: string; icon: string }
   success: { bg: 'bg-green-50', border: 'border-green-400', icon: '✓' },
   error: { bg: 'bg-red-50', border: 'border-red-400', icon: '✕' },
   warning: { bg: 'bg-yellow-50', border: 'border-yellow-400', icon: '⚠' },
-  info: { bg: 'bg-blue-50', border: 'border-blue-400', icon: 'ℹ' },
+  info: { bg: 'bg-primary-50', border: 'border-primary-400', icon: 'ℹ' },
 }
 
 function ToastContainer({ toasts, onClose }: { toasts: Toast[]; onClose: (id: number) => void }) {
@@ -63,10 +63,10 @@ function ToastContainer({ toasts, onClose }: { toasts: Toast[]; onClose: (id: nu
           <div key={t.id} className={`${s.bg} ${s.border} border-l-4 rounded shadow-lg p-3 flex items-start gap-2 animate-slide-in`}>
             <span className="font-bold text-lg leading-none mt-0.5">{s.icon}</span>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-gray-900">{t.title}</p>
-              {t.message && <p className="text-xs text-gray-600 mt-0.5">{t.message}</p>}
+              <p className="font-semibold text-sm text-surface-900">{t.title}</p>
+              {t.message && <p className="text-xs text-surface-600 mt-0.5">{t.message}</p>}
             </div>
-            <button onClick={() => onClose(t.id)} className="text-gray-400 hover:text-gray-600 text-sm leading-none">&times;</button>
+            <button onClick={() => onClose(t.id)} className="text-surface-400 hover:text-surface-600 text-sm leading-none">&times;</button>
           </div>
         )
       })}

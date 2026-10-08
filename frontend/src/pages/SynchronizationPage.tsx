@@ -69,41 +69,41 @@ export default function SynchronizationPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Sincronización</h1>
+      <h1 className="mb-6 text-2xl font-bold text-surface-800">Sincronización</h1>
 
       <div className="mb-6 grid gap-4 md:grid-cols-3">
         <button
           onClick={() => handleSync('cartera')}
           disabled={syncing !== null}
-          className="rounded-lg bg-white p-4 shadow text-left hover:bg-gray-50 disabled:opacity-50"
+          className="card-hover p-4 text-left disabled:opacity-50"
         >
-          <h3 className="text-sm font-semibold text-gray-500 uppercase">Cartera</h3>
-          <p className="mt-2 text-lg font-bold text-blue-600">
+          <h3 className="text-sm font-semibold text-surface-500 uppercase">Cartera</h3>
+          <p className="mt-2 text-lg font-bold text-primary-600">
             {syncing === 'cartera' ? 'Sincronizando...' : 'Sincronizar'}
           </p>
-          <p className="text-xs text-gray-400">Sincronizar CUENTAS JOGLO y POR COBRAR</p>
+          <p className="text-xs text-surface-400">Sincronizar CUENTAS JOGLO y POR COBRAR</p>
         </button>
         <button
           onClick={handleExport}
           disabled={syncing !== null}
-          className="rounded-lg bg-white p-4 shadow text-left hover:bg-gray-50 disabled:opacity-50"
+          className="card-hover p-4 text-left disabled:opacity-50"
         >
-          <h3 className="text-sm font-semibold text-gray-500 uppercase">Exportar Pagos</h3>
+          <h3 className="text-sm font-semibold text-surface-500 uppercase">Exportar Pagos</h3>
           <p className="mt-2 text-lg font-bold text-green-600">
             {syncing === 'export' ? 'Exportando...' : 'Exportar'}
           </p>
-          <p className="text-xs text-gray-400">Exportar últimos 30 días a Excel</p>
+          <p className="text-xs text-surface-400">Exportar últimos 30 días a Excel</p>
         </button>
         <button
           onClick={handleGuardar}
           disabled={syncing !== null}
-          className="rounded-lg bg-white p-4 shadow text-left hover:bg-gray-50 disabled:opacity-50"
+          className="card-hover p-4 text-left disabled:opacity-50"
         >
-          <h3 className="text-sm font-semibold text-gray-500 uppercase">Guardar en Excel</h3>
+          <h3 className="text-sm font-semibold text-surface-500 uppercase">Guardar en Excel</h3>
           <p className="mt-2 text-lg font-bold text-purple-600">
             {syncing === 'guardar' ? 'Guardando...' : 'Guardar'}
           </p>
-          <p className="text-xs text-gray-400">Sobrescribir datos en el archivo .xlsx</p>
+          <p className="text-xs text-surface-400">Sobrescribir datos en el archivo .xlsx</p>
         </button>
       </div>
 
@@ -129,22 +129,22 @@ export default function SynchronizationPage() {
         </div>
       )}
 
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase">Historial de Sincronización</h3>
+      <div className="card p-4">
+        <h3 className="mb-3 text-sm font-semibold text-surface-500 uppercase">Historial de Sincronización</h3>
         {loading ? (
-          <p className="text-sm text-gray-400">Cargando...</p>
+          <p className="text-sm text-surface-400">Cargando...</p>
         ) : historial.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin actividad de sincronización.</p>
+          <p className="text-sm text-surface-400">Sin actividad de sincronización.</p>
         ) : (
           <div className="space-y-2">
             {historial.map((h) => (
-              <div key={h.id} className="border-l-4 border-blue-300 bg-blue-50 p-3 text-sm">
+              <div key={h.id} className="border-l-4 border-primary-300 bg-primary-50 p-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-blue-800">{h.accion}</span>
-                  <span className="text-xs text-gray-400">{formatDate(h.fecha)}</span>
+                  <span className="font-medium text-primary-800">{h.accion}</span>
+                  <span className="text-xs text-surface-400">{formatDate(h.fecha)}</span>
                 </div>
-                {h.descripcion && <p className="mt-1 text-gray-600">{h.descripcion}</p>}
-                <p className="mt-1 text-xs text-gray-400">por {h.usuario}</p>
+                {h.descripcion && <p className="mt-1 text-surface-600">{h.descripcion}</p>}
+                <p className="mt-1 text-xs text-surface-400">por {h.usuario}</p>
               </div>
             ))}
           </div>

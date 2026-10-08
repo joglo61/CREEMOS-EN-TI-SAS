@@ -209,7 +209,7 @@ export default function RegistrarPagoPage() {
             aria-checked={aplicarInteres}
             onClick={handleToggleInteres}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${
-              aplicarInteres ? 'bg-blue-600' : 'bg-gray-300'
+              aplicarInteres ? 'bg-primary-600' : 'bg-surface-300'
             }`}
           >
             <span

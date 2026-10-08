@@ -105,41 +105,41 @@ export default function ExcelManagementPage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-center text-gray-500">Cargando...</div>
+  if (loading) return <div className="p-6 text-center text-surface-500">Cargando...</div>
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Administración de Archivos Excel</h1>
+      <h1 className="mb-6 text-2xl font-bold text-surface-800">Administración de Archivos Excel</h1>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-3">
+      <div className="mb-6 grid gap-4 md:grid-cols-2">
         {([
           { key: 'cartera_creemos', label: 'CREEMOS (Cartera)' },
         ] as const).map(({ key, label }) => {
           const st = estado?.[key]
           return (
-            <div key={key} className="rounded-lg bg-white p-4 shadow">
-              <h3 className="mb-2 text-sm font-semibold text-gray-500 uppercase">{label}</h3>
+            <div key={key} className="card p-4">
+              <h3 className="mb-2 text-sm font-semibold text-surface-500 uppercase">{label}</h3>
               {st?.activo ? (
                 <div className="space-y-1 text-sm">
-                  <p><span className="text-gray-500">Archivo:</span> {st.nombre}</p>
-                  <p><span className="text-gray-500">Tamaño:</span> {st.tamano ? `${(st.tamano / 1024).toFixed(1)} KB` : '-'}</p>
-                  <p><span className="text-gray-500">Modificado:</span> {formatDate(st.fecha)}</p>
+                  <p><span className="text-surface-500">Archivo:</span> {st.nombre}</p>
+                  <p><span className="text-surface-500">Tamaño:</span> {st.tamano ? `${(st.tamano / 1024).toFixed(1)} KB` : '-'}</p>
+                  <p><span className="text-surface-500">Modificado:</span> {formatDate(st.fecha)}</p>
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">Sin archivo activo.</p>
+                <p className="text-sm text-surface-400">Sin archivo activo.</p>
               )}
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   onClick={() => handleUpload(key)}
                   disabled={uploading}
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="btn-primary btn-sm"
                 >
                   {uploading ? 'Subiendo...' : 'Subir Archivo'}
                 </button>
                 <button
                   onClick={handleActualizarExcel}
                   disabled={updating || !st?.activo}
-                  className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="btn-success btn-sm"
                   title="Escribe los pagos del sistema en el Excel (con color), crea el bloque del mes si falta y re-sincroniza"
                 >
                   {updating ? 'Actualizando...' : 'Actualizar Excel'}
@@ -147,7 +147,7 @@ export default function ExcelManagementPage() {
                 {st?.activo && (
                   <button
                     onClick={() => excelService.descargarCartera().catch(() => alert('Error al descargar.'))}
-                    className="rounded-md bg-gray-600 px-3 py-1.5 text-xs text-white hover:bg-gray-700"
+                    className="btn-secondary btn-sm"
                   >
                     Descargar
                   </button>
@@ -156,7 +156,7 @@ export default function ExcelManagementPage() {
                   <button
                     onClick={() => handleRemove(key, label)}
                     disabled={removing === key}
-                    className="rounded-md bg-red-600 px-3 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50"
+                    className="btn-danger btn-sm"
                   >
                     {removing === key ? '...' : 'Quitar'}
                   </button>
@@ -166,28 +166,28 @@ export default function ExcelManagementPage() {
           )
         })}
 
-        <div className="rounded-lg bg-white p-4 shadow">
-          <h3 className="mb-2 text-sm font-semibold text-gray-500 uppercase">Exportar Todo</h3>
-          <p className="mb-3 text-sm text-gray-400">Descarga un Excel completo con clientes, préstamos, pagos y facturas.</p>
+        <div className="card p-4">
+          <h3 className="mb-2 text-sm font-semibold text-surface-500 uppercase">Exportar Todo</h3>
+          <p className="mb-3 text-sm text-surface-400">Descarga un Excel completo con clientes, préstamos, pagos y facturas.</p>
           <button
             onClick={handleExportar}
             disabled={exporting}
-            className="rounded-md bg-green-600 px-3 py-1.5 text-xs text-white hover:bg-green-700 disabled:opacity-50"
+            className="btn-success btn-sm"
           >
             {exporting ? 'Exportando...' : 'Descargar Respaldo Excel'}
           </button>
         </div>
       </div>
 
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase">Historial de Versiones</h3>
+      <div className="card p-4">
+        <h3 className="mb-3 text-sm font-semibold text-surface-500 uppercase">Historial de Versiones</h3>
         {versiones.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin versiones registradas.</p>
+          <p className="text-sm text-surface-400">Sin versiones registradas.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-gray-500">
+                <tr className="border-b text-left text-surface-500">
                   <th className="pb-2 pr-3">Tipo</th>
                   <th className="pb-2 pr-3">Versión</th>
                   <th className="pb-2 pr-3">Nombre</th>
@@ -199,7 +199,7 @@ export default function ExcelManagementPage() {
               </thead>
               <tbody>
                 {versiones.map((v) => (
-                  <tr key={v.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr key={v.id} className="border-b last:border-0 hover:bg-surface-50">
                     <td className="py-2 pr-3 capitalize">{v.tipo}</td>
                     <td className="py-2 pr-3">v{v.version}</td>
                     <td className="py-2 pr-3 text-xs">{v.nombre}</td>
@@ -207,17 +207,17 @@ export default function ExcelManagementPage() {
                       {v.activo ? (
                         <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">Activo</span>
                       ) : (
-                        <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Histórico</span>
+                        <span className="rounded bg-surface-100 px-2 py-0.5 text-xs text-surface-500">Histórico</span>
                       )}
                     </td>
                     <td className="py-2 pr-3 text-xs">{formatDate(v.fecha)}</td>
-                    <td className="py-2 pr-3 text-xs text-gray-500">{v.usuario}</td>
+                    <td className="py-2 pr-3 text-xs text-surface-500">{v.usuario}</td>
                     <td className="py-2">
                       {!v.activo && (
                         <button
                           onClick={() => handleRestaurar(v.id)}
                           disabled={restoring === v.id}
-                          className="rounded bg-yellow-500 px-2 py-1 text-xs text-white hover:bg-yellow-600 disabled:opacity-50"
+                          className="btn-warning btn-xs"
                         >
                           {restoring === v.id ? '...' : 'Restaurar'}
                         </button>

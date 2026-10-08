@@ -90,9 +90,9 @@ export default function PrestamosListPage() {
                   <td className="font-mono text-xs">{p.id}</td>
                   <td className="font-medium text-primary-600">{p.cliente_nombre}</td>
                   <td className="uppercase">{p.cliente_placa}</td>
-                  <td className="text-right">${Number(p.capital_inicial).toLocaleString()}</td>
-                  <td className="text-right font-medium">${Number(p.saldo_actual).toLocaleString()}</td>
-                  <td className="text-right">${Number(p.valor_cuota).toLocaleString()}</td>
+                  <td className="text-right">${Number(p.capital_inicial).toLocaleString('es-CO')}</td>
+                  <td className="text-right font-medium">${Number(p.saldo_actual).toLocaleString('es-CO')}</td>
+                  <td className="text-right">${Number(p.valor_cuota).toLocaleString('es-CO')}</td>
                   <td>{formatDate(p.fecha_proximo_pago)}</td>
                   <td><span className={`badge ${estadoClass(p.estado)}`}>{p.estado}</span></td>
                 </tr>

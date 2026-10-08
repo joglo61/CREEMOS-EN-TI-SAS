@@ -69,9 +69,9 @@ export default function FacturasListPage() {
   return (
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Facturas</h1>
+        <h1 className="text-2xl font-bold text-surface-800">Facturas</h1>
         {selected.size > 0 && (
-          <button onClick={() => setConfirmOpen(true)} disabled={deleting} className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50">
+          <button onClick={() => setConfirmOpen(true)} disabled={deleting} className="btn-danger">
             {deleting ? 'Eliminando...' : `Eliminar (${selected.size})`}
           </button>
         )}
@@ -83,9 +83,9 @@ export default function FacturasListPage() {
           placeholder="Buscar por cliente o número de factura..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500"
         />
-        <select value={estado} onChange={(e) => setEstado(e.target.value)} className="rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+        <select value={estado} onChange={(e) => setEstado(e.target.value)} className="rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500">
           <option value="">Todos</option>
           <option value="EMITIDA">Emitida</option>
           <option value="ANULADA">Anulada</option>
@@ -93,14 +93,14 @@ export default function FacturasListPage() {
       </div>
 
       {loading ? (
-        <div className="text-center text-gray-500">Cargando...</div>
+        <div className="text-center text-surface-500">Cargando...</div>
       ) : items.length === 0 ? (
-        <div className="text-center text-gray-500">Sin facturas registradas.</div>
+        <div className="text-center text-surface-500">Sin facturas registradas.</div>
       ) : (
-        <div className="overflow-x-auto rounded-lg bg-white shadow">
+        <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-gray-500">
+              <tr className="border-b bg-surface-50 text-left text-surface-500">
                 <th className="px-4 py-3">
                   <input type="checkbox" checked={selected.size === items.length && items.length > 0} onChange={toggleAll} className="cursor-pointer" />
                 </th>
@@ -114,24 +114,24 @@ export default function FacturasListPage() {
             </thead>
             <tbody>
               {items.map((f) => (
-                <tr key={f.id} className="border-b hover:bg-gray-50">
+                <tr key={f.id} className="border-b hover:bg-surface-50">
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" checked={selected.has(f.id)} onChange={() => toggle(f.id)} className="cursor-pointer" />
                   </td>
                   <td className="px-4 py-3 font-mono text-xs font-medium cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>{f.numero_factura}</td>
                   <td className="px-4 py-3 cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>{f.cliente_nombre}</td>
-                  <td className="px-4 py-3 text-right cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>${Number(f.pago_valor).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>${Number(f.pago_valor).toLocaleString('es-CO')}</td>
                   <td className="px-4 py-3 cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>{formatDate(f.fecha)}</td>
                   <td className="px-4 py-3 cursor-pointer" onClick={() => navigate(`/facturas/${f.id}`)}>
-                    <span className={`rounded px-2 py-0.5 text-xs ${f.estado === 'EMITIDA' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{f.estado}</span>
+                    <span className={`rounded px-2 py-0.5 text-xs ${f.estado === 'EMITIDA' ? 'bg-primary-100 text-primary-700' : 'bg-surface-100 text-surface-600'}`}>{f.estado}</span>
                   </td>
                   <td className="px-4 py-3">
                     {f.ruta_pdf ? (
-                      <button onClick={() => handleDownloadPDF(f.id, f.numero_factura)} className="text-xs text-blue-600 hover:underline">
+                      <button onClick={() => handleDownloadPDF(f.id, f.numero_factura)} className="text-xs text-primary-600 hover:underline">
                         Descargar
                       </button>
                     ) : (
-                      <span className="text-xs text-gray-400">Pendiente</span>
+                      <span className="text-xs text-surface-400">Pendiente</span>
                     )}
                   </td>
                 </tr>
@@ -143,13 +143,13 @@ export default function FacturasListPage() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setConfirmOpen(false)}>
-          <div className="rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="mb-2 text-lg font-semibold text-gray-800">Confirmar eliminación</h3>
-            <p className="mb-1 text-sm text-gray-600">Se eliminarán <strong>{selected.size}</strong> factura(s) seleccionada(s).</p>
-            <p className="mb-4 text-sm text-gray-500">Esta acción no se puede deshacer.</p>
+          <div className="rounded-xl bg-white p-6 shadow-premium" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-2 text-lg font-semibold text-surface-800">Confirmar eliminación</h3>
+            <p className="mb-1 text-sm text-surface-600">Se eliminarán <strong>{selected.size}</strong> factura(s) seleccionada(s).</p>
+            <p className="mb-4 text-sm text-surface-500">Esta acción no se puede deshacer.</p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setConfirmOpen(false)} className="rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cancelar</button>
-              <button onClick={handleDelete} disabled={deleting} className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50">
+              <button onClick={() => setConfirmOpen(false)} className="rounded-md border px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">Cancelar</button>
+              <button onClick={handleDelete} disabled={deleting} className="btn-danger">
                 {deleting ? 'Eliminando...' : 'Eliminar'}
               </button>
             </div>

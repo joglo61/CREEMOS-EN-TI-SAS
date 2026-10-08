@@ -65,20 +65,20 @@ export default function BackupsPage() {
 
   const tipoColor = (tipo: string) => {
     switch (tipo) {
-      case 'base_datos': return 'bg-blue-100 text-blue-700'
+      case 'base_datos': return 'bg-primary-100 text-primary-700'
       case 'config': return 'bg-purple-100 text-purple-700'
-      default: return 'bg-gray-100 text-gray-600'
+      default: return 'bg-surface-100 text-surface-600'
     }
   }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Backups</h1>
+      <h1 className="mb-6 text-2xl font-bold text-surface-800">Backups</h1>
 
       {error && <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       <div className="mb-6 grid gap-4 md:grid-cols-3">
-        <button onClick={() => handleCrear('completo')} disabled={creating} className="rounded-lg bg-blue-600 p-4 text-white shadow hover:bg-blue-700 disabled:opacity-50 text-left">
+        <button onClick={() => handleCrear('completo')} disabled={creating} className="rounded-lg bg-primary-600 p-4 text-white shadow hover:bg-primary-700 disabled:opacity-50 text-left">
           <p className="text-sm font-medium uppercase opacity-80">Completo</p>
           <p className="mt-1 text-lg font-bold">{creating ? 'Creando...' : 'Crear Backup'}</p>
           <p className="mt-1 text-xs opacity-70">BD + Configuración</p>
@@ -95,17 +95,17 @@ export default function BackupsPage() {
         </button>
       </div>
 
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase">Historial de Backups</h3>
+      <div className="card p-4">
+        <h3 className="mb-3 text-sm font-semibold text-surface-500 uppercase">Historial de Backups</h3>
         {loading ? (
-          <p className="text-sm text-gray-400">Cargando...</p>
+          <p className="text-sm text-surface-400">Cargando...</p>
         ) : items.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin backups registrados.</p>
+          <p className="text-sm text-surface-400">Sin backups registrados.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-gray-500">
+                <tr className="border-b text-left text-surface-500">
                   <th className="pb-2 pr-3">Tipo</th>
                   <th className="pb-2 pr-3">Archivo</th>
                   <th className="pb-2 pr-3 text-right">Tamaño</th>
@@ -116,19 +116,19 @@ export default function BackupsPage() {
               </thead>
               <tbody>
                 {items.map((b) => (
-                  <tr key={b.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr key={b.id} className="border-b last:border-0 hover:bg-surface-50">
                     <td className="py-2 pr-3">
                       <span className={`rounded px-2 py-0.5 text-xs ${tipoColor(b.tipo)}`}>{b.tipo}</span>
                     </td>
                     <td className="py-2 pr-3 font-mono text-xs">{b.archivo}</td>
                     <td className="py-2 pr-3 text-right">{formatSize(b.tamano)}</td>
                     <td className="py-2 pr-3 text-xs">{formatDate(b.fecha)}</td>
-                    <td className="py-2 pr-3 text-xs text-gray-500">{b.usuario}</td>
+                    <td className="py-2 pr-3 text-xs text-surface-500">{b.usuario}</td>
                     <td className="py-2">
                       <button
                         onClick={() => handleRestaurar(b.id)}
                         disabled={restoring === b.id}
-                        className="rounded bg-yellow-500 px-2 py-1 text-xs text-white hover:bg-yellow-600 disabled:opacity-50"
+                        className="btn-warning btn-xs"
                       >
                         {restoring === b.id ? '...' : 'Restaurar'}
                       </button>

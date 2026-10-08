@@ -6,7 +6,7 @@ import { formatDate } from '@/utils/format'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import type { ValueType } from 'recharts/types/component/DefaultTooltipContent'
 
-const tipFmt = (v: ValueType | undefined) => v != null ? `$${Number(v).toLocaleString()}` : ''
+const tipFmt = (v: ValueType | undefined) => v != null ? `$${Number(v).toLocaleString('es-CO')}` : ''
 
 const cardIcons = [
   'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
@@ -63,13 +63,21 @@ export default function DashboardPage() {
     )
   }
 
+  const cop = (n: number) => `$${n.toLocaleString('es-CO')}`
+  // Color con significado: rojo = mora (solo si hay), verde = ingresos, azul = cartera
+  const tonos = {
+    azul: 'bg-primary-50 text-primary-600',
+    rojo: 'bg-red-50 text-red-600',
+    verde: 'bg-emerald-50 text-emerald-600',
+    neutro: 'bg-surface-100 text-surface-500',
+  }
   const cards = [
-    { label: 'Clientes Activos', value: data.clientes_activos, link: '/clientes' },
-    { label: 'Préstamos en Mora', value: data.prestamos_mora, link: '/prestamos?estado=MORA' },
-    { label: 'Capital Pendiente', value: `$${data.capital_pendiente.toLocaleString()}`, link: '/prestamos' },
-    { label: 'Ingresos Hoy', value: `$${data.ingresos_hoy.toLocaleString()}`, link: '/facturas' },
-    { label: 'Ingresos Semana', value: `$${data.ingresos_semana.toLocaleString()}`, link: '/facturas' },
-    { label: 'Ingresos del Mes', value: `$${data.ingresos_mes.toLocaleString()}`, link: '/facturas' },
+    { label: 'Clientes Activos', value: data.clientes_activos, link: '/clientes', tono: tonos.azul },
+    { label: 'Préstamos en Mora', value: data.prestamos_mora, link: '/prestamos?estado=MORA', tono: data.prestamos_mora > 0 ? tonos.rojo : tonos.neutro, alerta: data.prestamos_mora > 0 },
+    { label: 'Capital Pendiente', value: cop(data.capital_pendiente), link: '/prestamos', tono: tonos.azul },
+    { label: 'Ingresos Hoy', value: cop(data.ingresos_hoy), link: '/facturas', tono: tonos.verde },
+    { label: 'Ingresos Semana', value: cop(data.ingresos_semana), link: '/facturas', tono: tonos.verde },
+    { label: 'Ingresos del Mes', value: cop(data.ingresos_mes), link: '/facturas', tono: tonos.verde },
   ]
 
   return (
@@ -84,19 +92,15 @@ export default function DashboardPage() {
           <button
             key={c.label}
             onClick={() => navigate(c.link)}
-            className="group relative overflow-hidden rounded-xl p-4 text-left text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
-            style={{
-              backgroundImage: `linear-gradient(135deg, ${['#2563eb','#dc2626','#9333ea','#059669','#0891b2','#0d9488'][i]}, ${['#1d4ed8','#b91c1c','#7e22ce','#047857','#0e7490','#0f766e'][i]})`,
-            }}
+            className={`card-hover p-4 text-left focus:outline-none focus:ring-2 focus:ring-primary-500 ${c.alerta ? 'border-red-200' : ''}`}
           >
-            <div className="relative z-10">
-              <svg className="mb-3 h-8 w-8 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <span className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg ${c.tono}`}>
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d={cardIcons[i]} />
               </svg>
-              <p className="text-xs font-medium uppercase tracking-wider text-white/70">{c.label}</p>
-              <p className="mt-1 text-2xl font-bold tracking-tight">{c.value}</p>
-            </div>
-            <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/5 transition-all duration-300 group-hover:scale-150" />
+            </span>
+            <p className="text-xs font-medium uppercase tracking-wider text-surface-500">{c.label}</p>
+            <p className={`mt-1 text-2xl font-bold tracking-tight ${c.alerta ? 'text-red-600' : 'text-surface-900'}`}>{c.value}</p>
           </button>
         ))}
       </div>
@@ -122,7 +126,7 @@ export default function DashboardPage() {
                   fontSize: '13px',
                 }}
               />
-              <Bar dataKey="Ingresos" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={40} />
+              <Bar dataKey="Ingresos" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -144,7 +148,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-surface-800 truncate">{p.cliente}</p>
                     <p className="text-xs text-surface-400">{p.factura} &middot; {formatDate(p.fecha)}</p>
                   </div>
-                  <span className="ml-3 text-sm font-bold text-emerald-600">${Number(p.valor).toLocaleString()}</span>
+                  <span className="ml-3 text-sm font-bold text-emerald-600">${Number(p.valor).toLocaleString('es-CO')}</span>
                 </div>
               ))}
             </div>

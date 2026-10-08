@@ -70,17 +70,17 @@ export default function UsersManagementPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Usuarios</h1>
-        <button onClick={openCreate} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">+ Nuevo Usuario</button>
+        <h1 className="text-2xl font-bold text-surface-800">Usuarios</h1>
+        <button onClick={openCreate} className="btn-primary">+ Nuevo Usuario</button>
       </div>
 
-      {loading ? <div className="text-center text-gray-500">Cargando...</div>
-      : users.length === 0 ? <div className="text-center text-gray-500">Sin usuarios.</div>
+      {loading ? <div className="text-center text-surface-500">Cargando...</div>
+      : users.length === 0 ? <div className="text-center text-surface-500">Sin usuarios.</div>
       : (
-        <div className="overflow-x-auto rounded-lg bg-white shadow">
+        <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left text-gray-500">
+              <tr className="border-b bg-surface-50 text-left text-surface-500">
                 <th className="px-4 py-3">Usuario</th>
                 <th className="px-4 py-3">Nombre</th>
                 <th className="px-4 py-3">Rol</th>
@@ -91,11 +91,11 @@ export default function UsersManagementPage() {
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b hover:bg-gray-50">
+                <tr key={u.id} className="border-b hover:bg-surface-50">
                   <td className="px-4 py-3 font-medium">{u.usuario}</td>
                   <td className="px-4 py-3">{u.nombre}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded px-2 py-0.5 text-xs ${u.rol === 'ADMINISTRADOR' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{u.rol}</span>
+                    <span className={`rounded px-2 py-0.5 text-xs ${u.rol === 'ADMINISTRADOR' ? 'bg-purple-100 text-purple-700' : 'bg-primary-100 text-primary-700'}`}>{u.rol}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -104,11 +104,11 @@ export default function UsersManagementPage() {
                       {isBloqueado(u) && <span className="rounded bg-orange-100 px-2 py-0.5 text-xs text-orange-700">Bloqueado</span>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{formatDate(u.ultimo_acceso)}</td>
+                  <td className="px-4 py-3 text-xs text-surface-500">{formatDate(u.ultimo_acceso)}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      <button onClick={() => openEdit(u)} className="rounded bg-yellow-500 px-2 py-1 text-xs text-white hover:bg-yellow-600">Editar</button>
-                      <button onClick={() => openPassword(u)} className="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600">Password</button>
+                      <button onClick={() => openEdit(u)} className="btn-warning btn-xs">Editar</button>
+                      <button onClick={() => openPassword(u)} className="btn-primary btn-xs">Password</button>
                       <button onClick={() => handleToggleActive(u)} className={`rounded px-2 py-1 text-xs text-white ${u.activo ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}>{u.activo ? 'Desactivar' : 'Activar'}</button>
                       {isBloqueado(u) && <button onClick={() => handleDesbloquear(u)} className="rounded bg-orange-500 px-2 py-1 text-xs text-white hover:bg-orange-600">Desbloquear</button>}
                     </div>
@@ -122,20 +122,20 @@ export default function UsersManagementPage() {
 
       {modal === 'create' && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40" onClick={() => setModal(null)}>
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-premium" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-lg font-bold">Nuevo Usuario</h2>
             <div className="space-y-3">
-              <input placeholder="Nombre" value={form.nombre} onChange={set('nombre')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <input placeholder="Usuario" value={form.usuario} onChange={set('usuario')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="password" placeholder="Contraseña" value={form.password} onChange={set('password')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <select value={form.rol} onChange={set('rol')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+              <input placeholder="Nombre" value={form.nombre} onChange={set('nombre')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500" />
+              <input placeholder="Usuario" value={form.usuario} onChange={set('usuario')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500" />
+              <input type="password" placeholder="Contraseña" value={form.password} onChange={set('password')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500" />
+              <select value={form.rol} onChange={set('rol')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500">
                 <option value="EMPLEADO">EMPLEADO</option>
                 <option value="ADMINISTRADOR">ADMINISTRADOR</option>
               </select>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-gray-700">Cancelar</button>
-              <button onClick={handleCreate} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white">Crear</button>
+              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-surface-700">Cancelar</button>
+              <button onClick={handleCreate} className="btn-primary">Crear</button>
             </div>
           </div>
         </div>
@@ -143,18 +143,18 @@ export default function UsersManagementPage() {
 
       {modal === 'edit' && selected && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40" onClick={() => setModal(null)}>
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-premium" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-lg font-bold">Editar: {selected.usuario}</h2>
             <div className="space-y-3">
-              <input placeholder="Nombre" value={form.nombre} onChange={set('nombre')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <select value={form.rol} onChange={set('rol')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+              <input placeholder="Nombre" value={form.nombre} onChange={set('nombre')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500" />
+              <select value={form.rol} onChange={set('rol')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500">
                 <option value="EMPLEADO">EMPLEADO</option>
                 <option value="ADMINISTRADOR">ADMINISTRADOR</option>
               </select>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-gray-700">Cancelar</button>
-              <button onClick={handleEdit} className="rounded-md bg-yellow-500 px-4 py-2 text-sm text-white">Guardar</button>
+              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-surface-700">Cancelar</button>
+              <button onClick={handleEdit} className="btn-warning">Guardar</button>
             </div>
           </div>
         </div>
@@ -162,12 +162,12 @@ export default function UsersManagementPage() {
 
       {modal === 'password' && selected && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40" onClick={() => setModal(null)}>
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-premium" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-lg font-bold">Cambiar Contraseña: {selected.usuario}</h2>
-            <input type="password" placeholder="Nueva contraseña (mín 6)" value={form.password} onChange={set('password')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="password" placeholder="Nueva contraseña (mín 6)" value={form.password} onChange={set('password')} className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500" />
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-gray-700">Cancelar</button>
-              <button onClick={handlePassword} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white">Cambiar</button>
+              <button onClick={() => setModal(null)} className="rounded-md border px-4 py-2 text-sm text-surface-700">Cancelar</button>
+              <button onClick={handlePassword} className="btn-primary">Cambiar</button>
             </div>
           </div>
         </div>

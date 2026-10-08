@@ -27,8 +27,8 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'facturas', label: 'Facturas' },
 ]
 
-const fmt = (n: number | string) => `$${Number(n).toLocaleString()}`
-const fmtPct = (n: number) => n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`
+const fmt = (n: number | string) => `$${Number(n).toLocaleString('es-CO')}`
+const fmtPct = (n: number) => n >= 0 ? `$${n.toLocaleString('es-CO')}` : `-$${Math.abs(n).toLocaleString('es-CO')}`
 const tipFmt = (v: ValueType | undefined) => v != null ? fmt(Number(v)) : ''
 
 function FlujoChart({ data }: { data: FlujoData }) {
@@ -51,20 +51,20 @@ function FlujoChart({ data }: { data: FlujoData }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-lg bg-white p-4 shadow">
-          <p className="text-xs text-gray-500 uppercase">Ingresos Totales</p>
+        <div className="card p-4">
+          <p className="text-xs text-surface-500 uppercase">Ingresos Totales</p>
           <p className="text-2xl font-bold text-green-600">{fmt(totalIngresos)}</p>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow">
-          <p className="text-xs text-gray-500 uppercase">Intereses Cobrados</p>
-          <p className="text-2xl font-bold text-blue-600">{fmt(totalIntereses)}</p>
+        <div className="card p-4">
+          <p className="text-xs text-surface-500 uppercase">Intereses Cobrados</p>
+          <p className="text-2xl font-bold text-primary-600">{fmt(totalIntereses)}</p>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow">
-          <p className="text-xs text-gray-500 uppercase">Nuevos Préstamos</p>
+        <div className="card p-4">
+          <p className="text-xs text-surface-500 uppercase">Nuevos Préstamos</p>
           <p className="text-2xl font-bold text-red-600">{fmt(totalPrestamos)}</p>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow">
-          <p className="text-xs text-gray-500 uppercase">Flujo Neto</p>
+        <div className="card p-4">
+          <p className="text-xs text-surface-500 uppercase">Flujo Neto</p>
           <p className={`text-2xl font-bold ${netoTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {fmtPct(netoTotal)}
           </p>
@@ -72,8 +72,8 @@ function FlujoChart({ data }: { data: FlujoData }) {
       </div>
 
       {/* Chart 1: Ingresos vs Nuevos Préstamos (Bar) */}
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-4 text-sm font-semibold text-gray-600 uppercase">Ingresos vs Nuevos Préstamos</h3>
+      <div className="card p-4">
+        <h3 className="mb-4 text-sm font-semibold text-surface-600 uppercase">Ingresos vs Nuevos Préstamos</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -88,8 +88,8 @@ function FlujoChart({ data }: { data: FlujoData }) {
       </div>
 
       {/* Chart 2: Intereses vs Capital (Stacked Bar) */}
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-4 text-sm font-semibold text-gray-600 uppercase">Composición de Ingresos</h3>
+      <div className="card p-4">
+        <h3 className="mb-4 text-sm font-semibold text-surface-600 uppercase">Composición de Ingresos</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -104,8 +104,8 @@ function FlujoChart({ data }: { data: FlujoData }) {
       </div>
 
       {/* Chart 3: Flujo Neto (Bar + Line) */}
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-4 text-sm font-semibold text-gray-600 uppercase">Flujo Neto del Mes</h3>
+      <div className="card p-4">
+        <h3 className="mb-4 text-sm font-semibold text-surface-600 uppercase">Flujo Neto del Mes</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -119,8 +119,8 @@ function FlujoChart({ data }: { data: FlujoData }) {
       </div>
 
       {/* Chart 4: Saldo Total (Area) */}
-      <div className="rounded-lg bg-white p-4 shadow">
-        <h3 className="mb-4 text-sm font-semibold text-gray-600 uppercase">Saldo Total en Cartera</h3>
+      <div className="card p-4">
+        <h3 className="mb-4 text-sm font-semibold text-surface-600 uppercase">Saldo Total en Cartera</h3>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -170,7 +170,7 @@ function TableReport({ reporte }: { reporte: string }) {
   const renderHeaders = () => {
     if (!items.length) return null
     return Object.keys(items[0]).map((k) => (
-      <th key={k} className="whitespace-nowrap border-b px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">
+      <th key={k} className="whitespace-nowrap border-b px-3 py-2 text-left text-xs font-medium uppercase text-surface-500">
         {k.replace(/_/g, ' ')}
       </th>
     ))
@@ -188,17 +188,17 @@ function TableReport({ reporte }: { reporte: string }) {
       {hasDateFilter && (
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div>
-            <label className="block text-xs text-gray-500">Desde</label>
+            <label className="block text-xs text-surface-500">Desde</label>
             <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)}
               className="rounded border px-2 py-1 text-sm" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500">Hasta</label>
+            <label className="block text-xs text-surface-500">Hasta</label>
             <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)}
               className="rounded border px-2 py-1 text-sm" />
           </div>
           <button onClick={load} disabled={loading}
-            className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">
+            className="btn-primary">
             {loading ? 'Consultando...' : 'Consultar'}
           </button>
         </div>
@@ -210,17 +210,17 @@ function TableReport({ reporte }: { reporte: string }) {
         <p className="mb-3 text-sm font-semibold">Total: {fmt(total)}</p>
       )}
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow">
+      <div className="card overflow-x-auto">
         {loading ? (
-          <div className="flex items-center justify-center p-12 text-sm text-gray-400">Cargando...</div>
+          <div className="flex items-center justify-center p-12 text-sm text-surface-400">Cargando...</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">Sin datos disponibles.</div>
+          <div className="p-8 text-center text-sm text-surface-400">Sin datos disponibles.</div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">{renderHeaders()}</thead>
+            <thead className="bg-surface-50">{renderHeaders()}</thead>
             <tbody>
               {items.map((row, i) => (
-                <tr key={i} className="border-b hover:bg-gray-50">
+                <tr key={i} className="border-b hover:bg-surface-50">
                   {Object.keys(items[0]).map((k) => (
                     <td key={k} className="whitespace-nowrap px-3 py-2">{renderCell(row[k])}</td>
                   ))}
@@ -232,7 +232,7 @@ function TableReport({ reporte }: { reporte: string }) {
       </div>
 
       <button onClick={() => window.open(`/api/v1/reportes/exportar-excel?reporte=${reporte}`, '_blank')}
-        className="mt-4 rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700">
+        className="mt-4 btn-success">
         Exportar a Excel
       </button>
     </div>
@@ -255,14 +255,14 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="mb-6 text-2xl font-bold text-gray-800">Reportes</h1>
+      <h1 className="mb-6 text-2xl font-bold text-surface-800">Reportes</h1>
 
       {/* Tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow'
+              tab === t.key ? 'bg-primary-600 text-white' : 'bg-white text-surface-600 hover:bg-surface-100 shadow'
             }`}>
             {t.label}
           </button>
@@ -271,11 +271,11 @@ export default function ReportsPage() {
 
       {tab === 'flujo' ? (
         flujoLoading ? (
-          <div className="flex items-center justify-center p-20 text-sm text-gray-400">Cargando gráficos...</div>
+          <div className="flex items-center justify-center p-20 text-sm text-surface-400">Cargando gráficos...</div>
         ) : flujo ? (
           <FlujoChart data={flujo} />
         ) : (
-          <div className="text-center text-sm text-gray-400">Error al cargar datos de flujo de caja.</div>
+          <div className="text-center text-sm text-surface-400">Error al cargar datos de flujo de caja.</div>
         )
       ) : (
         <TableReport reporte={tab} />

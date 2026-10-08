@@ -57,10 +57,10 @@ export default function ClientesListPage() {
   return (
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Clientes</h1>
+        <h1 className="text-2xl font-bold text-surface-800">Clientes</h1>
         <button
           onClick={() => navigate('/clientes/nuevo')}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+          className="btn-primary"
         >
           + Nuevo Cliente
         </button>
@@ -72,7 +72,7 @@ export default function ClientesListPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por placa, nombre o cédula..."
-          className="flex-1 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          className="flex-1 rounded-md border border-surface-300 px-4 py-2 focus:border-primary-500 focus:outline-none"
         />
         <select value={estado} onChange={(e) => setEstado(e.target.value)} className="rounded-md border px-3 py-2 text-sm outline-none">
           <option value="">Todos</option>
@@ -81,9 +81,9 @@ export default function ClientesListPage() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow">
+      <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b bg-gray-50 text-xs uppercase text-gray-600">
+          <thead className="border-b bg-surface-50 text-xs uppercase text-surface-600">
             <tr>
               <th className="px-4 py-3">Placa</th>
               <th className="px-4 py-3">Nombre</th>
@@ -97,15 +97,15 @@ export default function ClientesListPage() {
           <tbody className="divide-y">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">Cargando...</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-surface-500">Cargando...</td>
               </tr>
             ) : clientes.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">No se encontraron clientes.</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-surface-500">No se encontraron clientes.</td>
               </tr>
             ) : (
               clientes.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
+                <tr key={c.id} className="hover:bg-surface-50">
                   <td className="px-4 py-3 font-medium">{c.placa}</td>
                   <td className="px-4 py-3">{c.nombre}</td>
                   <td className="px-4 py-3">{c.telefono || '-'}</td>
@@ -113,13 +113,13 @@ export default function ClientesListPage() {
                   <td className="px-4 py-3">-</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                      c.estado === 'ACTIVO' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                      c.estado === 'ACTIVO' ? 'bg-green-100 text-green-700' : 'bg-surface-100 text-surface-600'
                     }`}>
                       {c.estado}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => navigate(`/clientes/${c.id}`)} className="mr-2 text-blue-600 hover:underline">
+                    <button onClick={() => navigate(`/clientes/${c.id}`)} className="mr-2 text-primary-600 hover:underline">
                       Ver
                     </button>
                     <button onClick={() => navigate(`/clientes/${c.id}/editar`)} className="mr-2 text-yellow-600 hover:underline">
@@ -137,7 +137,7 @@ export default function ClientesListPage() {
       </div>
 
       {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-surface-600">
           <span>{total} cliente(s)</span>
           <div className="flex gap-2">
             <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded border px-3 py-1 disabled:opacity-50">

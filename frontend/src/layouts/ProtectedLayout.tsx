@@ -11,9 +11,9 @@ const menuItems = [
   { label: 'Reportes', path: '/reportes', icon: 'chart-bar' },
   { label: 'Excel', path: '/excel', icon: 'file-spreadsheet' },
   { label: 'Sync', path: '/sync', icon: 'refresh' },
-  { label: 'Usuarios', path: '/usuarios', icon: 'user-cog' },
-  { label: 'Backups', path: '/backups', icon: 'database' },
-  { label: 'Config', path: '/config', icon: 'settings' },
+  { label: 'Usuarios', path: '/usuarios', icon: 'user-cog', adminOnly: true },
+  { label: 'Backups', path: '/backups', icon: 'database', adminOnly: true },
+  { label: 'Config', path: '/config', icon: 'settings', adminOnly: true },
 ]
 
 const iconPaths: Record<string, string> = {
@@ -85,13 +85,14 @@ export default function ProtectedLayout() {
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-thin px-2 py-3">
-          <nav className="space-y-0.5">
-            {menuItems.map((item) => {
+          <nav className="space-y-0.5" aria-label="Menú principal">
+            {menuItems.filter((item) => !('adminOnly' in item) || user?.rol === 'ADMINISTRADOR').map((item) => {
               const active = isActive(item.path)
               return (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
+                  aria-current={active ? 'page' : undefined}
                   className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                     active
                       ? 'bg-primary-50 text-primary-700'
@@ -124,7 +125,7 @@ export default function ProtectedLayout() {
 
       <div className="flex flex-1 flex-col min-w-0">
         <header className="flex items-center justify-end gap-4 border-b border-surface-200 bg-white/80 backdrop-blur-md px-6 py-3">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="btn-ghost p-1.5 lg:hidden">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="btn-ghost p-1.5 lg:hidden" aria-label="Abrir o cerrar menú">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
